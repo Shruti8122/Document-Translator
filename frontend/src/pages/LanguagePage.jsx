@@ -34,7 +34,7 @@ export default function LanguagePage() {
       )
       await startTranslation(
         taskId,
-        sourceEntry ? sourceEntry[1].nllb : 'eng_Latn',
+        sourceEntry ? sourceEntry[1].easyocr : 'en',
         targetLang
       )
       navigate(`/progress/${taskId}`)

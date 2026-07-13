@@ -44,13 +44,19 @@ def get_languages():
 
 @app.post("/api/ocr", response_model=OCRResponse)
 async def ocr_endpoint(file: UploadFile = File(...), source_lang: str = "en"):
-    if source_lang not in {v["easyocr"] for v in config.LANGUAGE_MAP.values()}:
-        codes = [v["easyocr"] for v in config.LANGUAGE_MAP.values()]
-        if source_lang not in codes:
-            source_lang = "en"
+    for v in config.LANGUAGE_MAP.values():
+        if v["nllb"] == source_lang:
+            source_lang = v["easyocr"]
+            break
+    valid_codes = {v["easyocr"] for v in config.LANGUAGE_MAP.values()}
+    if source_lang not in valid_codes:
+        source_lang = "en"
     contents = await file.read()
     try:
-        text = ocr_image(contents, [source_lang])
+        ocr_langs = [source_lang]
+        if source_lang != "en":
+            ocr_langs.append("en")
+        text = ocr_image(contents, ocr_langs)
         return OCRResponse(text=text)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

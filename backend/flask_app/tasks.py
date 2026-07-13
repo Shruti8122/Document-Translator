@@ -75,7 +75,8 @@ def run_translation(task_id: str, pdf_path: str, source_lang: str, target_lang: 
         _update(task_id, 92, "Generating translated PDF...")
 
         output_pdf = os.path.join(task_dir, "output.pdf")
-        text_to_pdf(translated_texts, output_pdf)
+        target_script = target_lang.split("_")[1] if "_" in target_lang else "Latn"
+        text_to_pdf(translated_texts, output_pdf, target_script)
 
         _update(task_id, 100, "Translation complete!")
 

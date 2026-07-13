@@ -2,21 +2,20 @@ import io
 import numpy as np
 from PIL import Image
 
-_reader = None
+_readers = {}
 
 
 def get_reader(lang_list):
-    global _reader
-    if _reader is None:
+    key = tuple(sorted(lang_list))
+    if key not in _readers:
         import easyocr
-        _reader = easyocr.Reader(lang_list, gpu=True)
-    return _reader
+        _readers[key] = easyocr.Reader(list(key), gpu=True)
+    return _readers[key]
 
 
 def ocr_image(image_bytes: bytes, lang_codes: list) -> str:
     reader = get_reader(lang_codes)
     image = Image.open(io.BytesIO(image_bytes))
     image_np = np.array(image)
-    results = reader.readtext(image_np)
-    text_lines = [line[1] for line in results]
-    return "\n".join(text_lines)
+    results = reader.readtext(image_np, paragraph=True, detail=0)
+    return "\n".join(results)
