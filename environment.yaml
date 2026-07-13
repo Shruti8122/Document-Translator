@@ -1,0 +1,24 @@
+name: Doc_Translator
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - torch==2.1.0
+    - torchvision==0.16.0
+    - torchaudio==2.1.0
+    - easyocr==1.7.2
+    - transformers==4.36.2
+    - flask==3.0.0
+    - fastapi==0.108.0
+    - uvicorn==0.25.0
+    - PyMuPDF==1.23.7
+    - reportlab==4.0.8
+    - Pillow==10.1.0
+    - numpy==1.26.2
+    - requests==2.31.0
+    - python-multipart==0.0.6
+    - sentencepiece==0.1.99
+    - protobuf==3.20.3
