@@ -1,0 +1,52 @@
+.background {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: -2;
+
+    background:
+        radial-gradient(circle at top left, #2d1b69 0%, #111827 45%, #030712 100%);
+}
+
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: .35;
+}
+
+.blob1 {
+    width: 420px;
+    height: 420px;
+    background: #7c3aed;
+    top: -120px;
+    left: -80px;
+}
+
+.blob2 {
+    width: 450px;
+    height: 450px;
+    background: #2563eb;
+    right: -120px;
+    bottom: -150px;
+}
+
+.blob3 {
+    width: 300px;
+    height: 300px;
+    background: #ec4899;
+    left: 40%;
+    top: 55%;
+}
+
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+
+    background-image:
+        linear-gradient(rgba(255, 255, 255, .04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .04) 1px, transparent 1px);
+
+    background-size: 45px 45px;
+    mask-image: radial-gradient(circle at center, black 35%, transparent 95%);
+}

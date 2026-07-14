@@ -1,0 +1,44 @@
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Python
+backend/__pycache__/
+backend/**/*.pyc
+*.pyc
+*.pyo
+
+# Conda
+.env
+.venv
+conda-meta/
+
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment Variables
+.env
+.env.*
+
+# Build
+build/
+dist/
+
+# Cache
+.cache/
+# Powershell scripts on how to run this app
+start_flask.ps1
+start_fastapi.ps1
+start_frontend.ps1

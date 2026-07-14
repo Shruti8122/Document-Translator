@@ -1,94 +1,253 @@
-import { useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useDropzone } from 'react-dropzone'
-import GlassCard from '../components/GlassCard'
-import { uploadFile } from '../api'
+import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDropzone } from "react-dropzone";
+import { motion } from "framer-motion";
+import {
+  FiUploadCloud,
+  FiFileText,
+  FiCheckCircle,
+  FiGlobe,
+  FiCpu,
+} from "react-icons/fi";
+import GlassCard from "../components/GlassCard";
+import { uploadFile } from "../api";
 
 export default function UploadPage() {
-  const navigate = useNavigate()
-  const [file, setFile] = useState(null)
-  const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState('')
+  const navigate = useNavigate();
+
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
 
   const onDrop = useCallback((accepted) => {
-    const f = accepted[0]
-    if (f && f.type === 'application/pdf') {
-      setFile(f)
-      setError('')
+    const f = accepted[0];
+
+    if (f && f.type === "application/pdf") {
+      setFile(f);
+      setError("");
     } else {
-      setError('Please upload a valid PDF file')
+      setError("Please upload a valid PDF file.");
     }
-  }, [])
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'application/pdf': ['.pdf'] },
+    accept: {
+      "application/pdf": [".pdf"],
+    },
     maxFiles: 1,
     multiple: false,
-  })
+  });
 
   const handleUpload = async () => {
-    if (!file) return
-    setUploading(true)
-    setError('')
+    if (!file) return;
+
+    setUploading(true);
+    setError("");
+
     try {
-      const { task_id } = await uploadFile(file)
-      navigate(`/language/${task_id}`)
+      const { task_id } = await uploadFile(file);
+      navigate(`/language/${task_id}`);
     } catch (err) {
-      setError(err.response?.data?.error || 'Upload failed. Please try again.')
+      setError(
+        err.response?.data?.error ||
+        "Upload failed. Please try again."
+      );
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
 
   return (
     <div className="page-container">
-      <GlassCard>
-        <h1 className="title">Doc Translator</h1>
-        <p className="subtitle">Upload a PDF document to translate it into any language</p>
 
-        <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
+      <GlassCard className="upload-card">
+
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+
+          <h1 className="title">
+            AI Document Translator
+          </h1>
+
+          <p className="subtitle">
+            Translate scanned PDF documents into multiple languages
+            using OCR + AI Translation.
+          </p>
+
+        </motion.div>
+
+        <motion.div
+          {...getRootProps()}
+          className={`dropzone ${isDragActive ? "active" : ""}`}
+          whileHover={{ scale: 1.01 }}
+        >
+
           <input {...getInputProps()} />
-          {isDragActive ? (
-            <p style={{ color: 'rgba(255,255,255,0.8)' }}>Drop your PDF here...</p>
-          ) : (
-            <div>
-              <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)' }}>
-                Drag & drop a PDF here, or click to browse
-              </p>
-              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem' }}>
-                Only .pdf files up to 50MB
-              </p>
-            </div>
-          )}
-        </div>
+
+          <FiUploadCloud
+            size={70}
+            style={{
+              marginBottom: 20,
+              color: "#A78BFA",
+            }}
+          />
+
+          <h3
+            style={{
+              marginBottom: 10,
+            }}
+          >
+            {isDragActive
+              ? "Drop PDF Here"
+              : "Drag & Drop PDF"}
+          </h3>
+
+          <p
+            style={{
+              color: "rgba(255,255,255,.65)",
+            }}
+          >
+            or click to browse
+          </p>
+
+          <small
+            style={{
+              display: "block",
+              marginTop: 12,
+              color: "rgba(255,255,255,.45)",
+            }}
+          >
+            Supports PDF • Maximum 50 MB
+          </small>
+
+        </motion.div>
 
         {file && (
-          <div className="file-info">
-            <span style={{ fontSize: '1.2rem' }}>📄</span>
-            <span>{file.name}</span>
-            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>
-              ({(file.size / 1024 / 1024).toFixed(1)} MB)
-            </span>
-          </div>
+
+          <motion.div
+            className="file-info"
+            initial={{
+              opacity: 0,
+              y: 20,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+          >
+
+            <FiFileText
+              size={28}
+              color="#A78BFA"
+            />
+
+            <div>
+
+              <strong>{file.name}</strong>
+
+              <br />
+
+              <span
+                style={{
+                  color: "rgba(255,255,255,.55)",
+                }}
+              >
+                {(file.size / 1024 / 1024).toFixed(2)} MB
+              </span>
+
+            </div>
+
+            <FiCheckCircle
+              size={24}
+              color="#4ADE80"
+              style={{
+                marginLeft: "auto",
+              }}
+            />
+
+          </motion.div>
+
         )}
 
         {error && (
-          <p style={{ color: '#f87171', fontSize: '0.9rem', marginTop: '1rem', textAlign: 'center' }}>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{
+              color: "#F87171",
+              textAlign: "center",
+              marginTop: 18,
+            }}
+          >
             {error}
-          </p>
+          </motion.div>
+
         )}
 
-        <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-          <button
-            className="glass-button"
-            onClick={handleUpload}
-            disabled={!file || uploading}
-          >
-            {uploading ? 'Uploading...' : 'Upload & Continue'}
-          </button>
+        <button
+          className="glass-button"
+          disabled={!file || uploading}
+          onClick={handleUpload}
+          style={{
+            marginTop: 30,
+          }}
+        >
+          {uploading
+            ? "Uploading..."
+            : "Upload & Continue"}
+        </button>
+
+        <div
+          style={{
+            marginTop: 40,
+            display: "grid",
+            gridTemplateColumns: "repeat(3,1fr)",
+            gap: 16,
+            textAlign: "center",
+          }}
+        >
+
+          <div>
+
+            <FiCpu
+              size={26}
+              color="#A78BFA"
+            />
+
+            <p>OCR</p>
+
+          </div>
+
+          <div>
+
+            <FiGlobe
+              size={26}
+              color="#60A5FA"
+            />
+
+            <p>200+ Languages</p>
+
+          </div>
+
+          <div>
+
+            <FiCheckCircle
+              size={26}
+              color="#4ADE80"
+            />
+
+            <p>AI Translation</p>
+
+          </div>
+
         </div>
+
       </GlassCard>
+
     </div>
-  )
+  );
 }
