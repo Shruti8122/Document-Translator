@@ -1,55 +1,237 @@
-# Doc Translator
+# 🌍 AI Document Translator
 
-Document translation web app using **EasyOCR** for OCR and **NLLB-200** for translation.
+An AI-powered document translation web application that extracts text from PDF documents using **EasyOCR**, translates the extracted text into multiple languages using **Meta's NLLB-200 (No Language Left Behind)** model, and generates a translated PDF for download.
 
-## Architecture
+The project features a modern React frontend with a Flask/FastAPI backend, providing a simple and intuitive workflow for document translation.
 
-- **FastAPI** (port 8000) — Model inference service: OCR and translation
-- **Flask** (port 5000) — Web server: file upload, progress tracking, result delivery
-- **React + Vite** (port 3000 dev) — Glassmorphism frontend
+---
 
-## Quick Start
+## ✨ Features
 
-### 1. Conda Environment
+- 📄 Upload PDF documents
+- 🔍 Extract text using EasyOCR
+- 🌐 Translate text into multiple languages using NLLB-200
+- 📊 Live translation progress tracking
+- 👀 Preview translated PDF inside the application
+- 📥 Download translated PDF
+- 🎨 Modern glassmorphism user interface
+- ⚡ Responsive and user-friendly frontend
+
+---
+
+## 🖥️ Tech Stack
+
+### Frontend
+- React.js
+- Vite
+- React Router
+- Axios
+- React Dropzone
+- Framer Motion
+- React Icons
+- CSS (Glassmorphism UI)
+
+### Backend
+- Python
+- Flask
+- FastAPI
+- EasyOCR
+- Transformers (Hugging Face)
+- PyTorch
+- PyMuPDF
+- ReportLab
+
+---
+
+## 📂 Project Structure
+
+```
+Doc_Translator/
+│
+├── backend/
+│   ├── flask_app/
+│   ├── fastapi_app/
+│   └── uploads/
+│
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   └── package.json
+│
+├── EasyOCR/
+├── environment.yaml
+├── README.md
+└── requirements.txt
+```
+
+---
+
+## 🚀 Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Shruti8122/Document-Translator.git
+cd Document-Translator
+```
+
+---
+
+### 2. Create the Conda environment
 
 ```bash
 conda env create -f environment.yaml
+```
+
+Activate it
+
+```bash
 conda activate Doc_Translator
 ```
 
-### 2. Frontend
+---
+
+### 3. Install Frontend Dependencies
 
 ```bash
 cd frontend
 npm install
-npm run build    # production build served by Flask
-# OR for development:
-npm run dev      # starts on port 3000 with proxy to Flask
 ```
 
-### 3. Start Services
+---
 
-Open **3 terminals** (all must have `conda activate Doc_Translator`):
+## ▶️ Running the Project
 
-| Terminal | Command | Port |
-|----------|---------|------|
-| 1 (FastAPI) | `uvicorn backend.fastapi_app.main:app --host 0.0.0.0 --port 8000` | 8000 |
-| 2 (Flask) | `python -m backend.flask_app.app` | 5000 |
-| 3 (Frontend dev) | `cd frontend && npm run dev` | 3000 |
+### Start Flask Backend
 
-Or use the PowerShell scripts:
-```powershell
-.\start_fastapi.ps1
-.\start_flask.ps1
-.\start_frontend.ps1
+```bash
+cd backend/flask_app
+python app.py
 ```
 
-### 4. Open
+or
 
-Navigate to **http://localhost:3000** (dev) or **http://localhost:5000** (production).
+```bash
+flask run
+```
 
-## Notes
+---
 
-- First run loads EasyOCR + NLLB models from HuggingFace (~2GB download).
-- CUDA GPU is recommended. Falls back to CPU if unavailable.
-- Supported languages: English, Hindi, French, Spanish, German, Italian, Portuguese, Russian, Chinese, Japanese, Korean, Arabic, Bengali, Turkish, Vietnamese, Thai, Dutch, Polish, Romanian, Swedish, Czech, Greek, Hungarian, Indonesian, Malay, Ukrainian, Hebrew, Urdu, Tamil, Telugu.
+### Start FastAPI Backend (Optional)
+
+```bash
+cd backend/fastapi_app
+uvicorn main:app --reload
+```
+
+---
+
+### Start React Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+The application will be available at
+
+```
+http://localhost:5173
+```
+
+---
+
+## 📖 Workflow
+
+1. Upload a PDF document.
+2. Select the source language.
+3. Select the target language.
+4. Start translation.
+5. Monitor translation progress.
+6. Preview translated PDF.
+7. Download translated document.
+
+---
+
+## 📷 Screenshots
+
+You can add screenshots here after uploading them.
+
+### Home Page
+
+```
+screenshots/home.png
+```
+
+### Language Selection
+
+```
+screenshots/language.png
+```
+
+### Translation Progress
+
+```
+screenshots/progress.png
+```
+
+### Result Page
+
+```
+screenshots/result.png
+```
+
+---
+
+## 📦 Main Python Libraries
+
+- EasyOCR
+- Transformers
+- Torch
+- Flask
+- FastAPI
+- Uvicorn
+- PyMuPDF
+- Pillow
+- ReportLab
+- SentencePiece
+- NumPy
+
+---
+
+## 📌 Future Improvements
+
+- Support DOCX input
+- Support image input
+- Batch document translation
+- Translation history
+- User authentication
+- Cloud deployment
+- OCR confidence visualization
+- Multiple translation models
+
+---
+
+## 👩‍💻 Author
+
+**Shruti Singh**
+
+B.Tech CSE (Artificial Intelligence & Machine Learning)
+
+GitHub: https://github.com/Shruti8122
+
+---
+
+## 🙏 Acknowledgements
+
+- Meta AI for the NLLB-200 multilingual translation model.
+- EasyOCR for optical character recognition.
+- Hugging Face Transformers library.
+- PyTorch team for the deep learning framework.
+- React and Vite for the frontend ecosystem.
+
+---
+
+## 📄 License
+
+This project is intended for educational and academic purposes.
