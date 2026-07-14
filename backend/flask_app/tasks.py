@@ -1,9 +1,11 @@
 import os
-import json
 import threading
-import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from . import config
 from .pdf_utils import pdf_to_images, read_image_bytes, text_to_pdf
+from ..fastapi_app.ocr_engine import ocr_image
+from ..fastapi_app.translator import translate_text
+from ..fastapi_app.config import LANGUAGE_MAP
 
 tasks = {}
 _lock = threading.Lock()
@@ -23,8 +25,30 @@ def _update(task_id: str, progress: int, message: str, error: str = None):
         }
 
 
+def _ocr_single(img_path, source_lang):
+    img_bytes = read_image_bytes(img_path)
+    ocr_langs = [source_lang]
+    if source_lang != "en":
+        ocr_langs.append("en")
+    return ocr_image(img_bytes, ocr_langs)
+
+
+def _translate_single(text, target_lang):
+    if not text.strip():
+        return ""
+    return translate_text(text, target_lang)
+
+
 def run_translation(task_id: str, pdf_path: str, source_lang: str, target_lang: str):
     try:
+        for v in LANGUAGE_MAP.values():
+            if v["nllb"] == source_lang:
+                source_lang = v["easyocr"]
+                break
+        easyocr_codes = {v["easyocr"] for v in LANGUAGE_MAP.values()}
+        if source_lang not in easyocr_codes:
+            source_lang = "en"
+
         task_dir = os.path.join(config.UPLOAD_FOLDER, task_id)
         images_dir = os.path.join(task_dir, "images")
         os.makedirs(images_dir, exist_ok=True)
@@ -37,40 +61,29 @@ def run_translation(task_id: str, pdf_path: str, source_lang: str, target_lang: 
             _update(task_id, 0, "Error", error="PDF has no pages")
             return
 
-        ocr_texts = []
-        for i, img_path in enumerate(image_paths):
-            pct = 10 + int((i / total_pages) * 40)
-            _update(task_id, pct, f"Running OCR on page {i + 1}/{total_pages}...")
+        ocr_texts = [None] * total_pages
+        _update(task_id, 10, f"Running OCR on {total_pages} pages (parallel)...")
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            fut_map = {executor.submit(_ocr_single, img_path, source_lang): i
+                       for i, img_path in enumerate(image_paths)}
+            for fut in as_completed(fut_map):
+                idx = fut_map[fut]
+                ocr_texts[idx] = fut.result()
+                done = sum(1 for t in ocr_texts if t is not None)
+                pct = 10 + int((done / total_pages) * 40)
+                _update(task_id, pct, f"OCR: {done}/{total_pages} pages done...")
 
-            img_bytes = read_image_bytes(img_path)
-            resp = requests.post(
-                f"{config.FASTAPI_URL}/api/ocr",
-                files={"file": ("page.png", img_bytes, "image/png")},
-                params={"source_lang": source_lang},
-                timeout=300,
-            )
-            if resp.status_code != 200:
-                _update(task_id, 0, "Error", error=f"OCR failed on page {i + 1}: {resp.text}")
-                return
-            ocr_texts.append(resp.json()["text"])
-
-        translated_texts = []
-        for i, text in enumerate(ocr_texts):
-            if not text.strip():
-                translated_texts.append("")
-                continue
-            pct = 50 + int((i / total_pages) * 40)
-            _update(task_id, pct, f"Translating page {i + 1}/{total_pages}...")
-
-            resp = requests.post(
-                f"{config.FASTAPI_URL}/api/translate",
-                json={"text": text, "target_lang": target_lang},
-                timeout=300,
-            )
-            if resp.status_code != 200:
-                _update(task_id, 0, "Error", error=f"Translation failed on page {i + 1}: {resp.text}")
-                return
-            translated_texts.append(resp.json()["translated_text"])
+        translated_texts = [None] * total_pages
+        _update(task_id, 50, f"Translating {total_pages} pages (parallel)...")
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            fut_map = {executor.submit(_translate_single, text, target_lang): i
+                       for i, text in enumerate(ocr_texts)}
+            for fut in as_completed(fut_map):
+                idx = fut_map[fut]
+                translated_texts[idx] = fut.result()
+                done = sum(1 for t in translated_texts if t is not None)
+                pct = 50 + int((done / total_pages) * 40)
+                _update(task_id, pct, f"Translate: {done}/{total_pages} pages done...")
 
         _update(task_id, 92, "Generating translated PDF...")
 

@@ -1,8 +1,7 @@
 import os
 import uuid
 import threading
-import requests
-from flask import Blueprint, request, jsonify, send_file, render_template, send_from_directory
+from flask import Blueprint, request, jsonify, send_file
 from . import config
 from .tasks import get_progress, run_translation
 
@@ -11,11 +10,11 @@ api = Blueprint("api", __name__)
 
 @api.route("/api/languages")
 def get_languages():
-    try:
-        resp = requests.get(f"{config.FASTAPI_URL}/api/languages", timeout=5)
-        return jsonify(resp.json())
-    except requests.ConnectionError:
-        return jsonify({"error": "FastAPI server not running"}), 503
+    from ..fastapi_app.config import LANGUAGE_MAP
+    return jsonify({
+        name: codes
+        for name, codes in LANGUAGE_MAP.items()
+    })
 
 
 @api.route("/api/upload", methods=["POST"])

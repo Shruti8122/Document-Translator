@@ -1,15 +1,21 @@
 import re
+import torch
 
 _model = None
 _tokenizer = None
+_device = None
 
 
 def get_model():
-    global _model, _tokenizer
+    global _model, _tokenizer, _device
     if _model is None:
         from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+        _device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         _tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-200-distilled-600M")
-        _model = AutoModelForSeq2SeqLM.from_pretrained("facebook/nllb-200-distilled-600M")
+        _model = AutoModelForSeq2SeqLM.from_pretrained(
+            "facebook/nllb-200-distilled-600M",
+            torch_dtype=torch.float16 if _device.type == "cuda" else torch.float32,
+        ).to(_device)
     return _model, _tokenizer
 
 
@@ -53,20 +59,20 @@ def _chunk_text(text: str, tokenizer, max_tokens: int = 450) -> list:
     return chunks if chunks else [text]
 
 
+@torch.no_grad()
 def translate_text(text: str, target_lang_code: str) -> str:
     model, tokenizer = get_model()
     chunks = _chunk_text(text, tokenizer)
-    translated_chunks = []
-    for chunk in chunks:
-        inputs = tokenizer(chunk, return_tensors="pt", padding=True, truncation=True, max_length=512)
-        forced_bos_token_id = tokenizer.lang_code_to_id[target_lang_code]
-        outputs = model.generate(
-            **inputs,
-            forced_bos_token_id=forced_bos_token_id,
-            max_length=512,
-            num_beams=4,
-            early_stopping=True,
-        )
-        translated = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        translated_chunks.append(translated)
-    return "\n\n".join(translated_chunks)
+    if not chunks:
+        return ""
+
+    forced_bos_token_id = tokenizer.lang_code_to_id[target_lang_code]
+    inputs = tokenizer(chunks, return_tensors="pt", padding=True, truncation=True, max_length=512).to(_device)
+    outputs = model.generate(
+        **inputs,
+        forced_bos_token_id=forced_bos_token_id,
+        max_length=512,
+        num_beams=1,
+    )
+    translated = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+    return "\n\n".join(translated)

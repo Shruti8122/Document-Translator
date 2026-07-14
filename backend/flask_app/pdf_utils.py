@@ -99,7 +99,7 @@ def _get_unicode_font(script: str = "Latn"):
     return "Helvetica"
 
 
-def pdf_to_images(pdf_path: str, output_dir: str, dpi: int = 300) -> list:
+def pdf_to_images(pdf_path: str, output_dir: str, dpi: int = 200) -> list:
     import fitz
     doc = fitz.open(pdf_path)
     image_paths = []
